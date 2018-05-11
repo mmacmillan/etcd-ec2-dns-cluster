@@ -1,0 +1,14 @@
+{
+  "name": "etcd-route53-node-init",
+  "description": "runs on an ec2 etcd node during boot, maintains Route53 DNS records, enabling on-going discovery in fluid cluster"
+  "version": "1.0.0",
+  "author": "mikejmacmillan@gmail.com",
+  "main": "run.js",
+  "scripts": {
+      "start": "node run.js"
+  },
+  "dependencies": {
+      "aws-sdk": "2.x.x"
+  },
+  "license": "ISC"
+}
