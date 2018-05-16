@@ -5,7 +5,7 @@ etcd-route53-node-init
 Runs within a container on etcd cluster nodes in EC2 during boot; manages DNS SRV records in Route53 for maintainable discovery in a fluid cluster
 
 this process expects the following 3 environment variables set:
-    - IP - the ip of this host, private preferably
+    - HOST - the hostname of this host, private preferably
     - HOSTED_ZONE_ID - the id of the route53 zone we're updating
     - DOMAIN - the domain that DNS is managing; this is used to create new SRV records
 
@@ -19,7 +19,7 @@ const route53 = new AWS.Route53();
 
 //** localize some environment variables in config
 const config = {
-    ip: process.env.IP,
+    hostname: process.env.HOSTNAME,
     hostedZoneId: process.env.HOSTED_ZONE_ID,
     domain: process.env.DOMAIN,
     ttl: process.env.TTL || 60
@@ -56,9 +56,9 @@ route53.listResourceRecordSets({
     !clientSrv && srv.push(clientSrv = createSrv(`_etcd-client._tcp.${config.domain}`));
     !serverSrv && srv.push(serverSrv = createSrv(`_etcd-server._tcp.${config.domain}`));
 
-    let gex = new RegExp('.*?'+ config.ip.replace(/\./g, '\\.'));
+    let gex = new RegExp('.*?'+ config.hostname.replace(/\./g, '\\.'));
 
-    //** see if the client/server SRV records contains the ip
+    //** see if the client/server SRV records contains the hostname 
     let clientExists = clientSrv.ResourceRecords.find((item) => { return gex.test(item.Value) });
     let serverExists = serverSrv.ResourceRecords.find((item) => { return gex.test(item.Value) });
 
@@ -76,13 +76,13 @@ route53.listResourceRecordSets({
 
     //** check/add the client/server SRV records for this node
     if(!clientExists) {
-        clientSrv.ResourceRecords.push({ Value: '1 10 2379 '+ config.ip });
+        clientSrv.ResourceRecords.push({ Value: '1 10 2379 '+ config.hostname});
         params.ChangeBatch.Changes.push(createBatch(clientSrv));
         console.log('client SRV record missing; added');
     }
 
     if(!serverExists) {
-        serverSrv.ResourceRecords.push({ Value: '1 10 2380 '+ config.ip });
+        serverSrv.ResourceRecords.push({ Value: '1 10 2380 '+ config.hostname });
         params.ChangeBatch.Changes.push(createBatch(serverSrv));
         console.log('server SRV record missing; added');
     }
@@ -96,7 +96,7 @@ route53.listResourceRecordSets({
             throw new Error(err2);
         }
 
-        console.log('ip added discovery SRV:', config.ip);
+        console.log('hostname added discovery SRV:', config.hostname);
     });
 });
 

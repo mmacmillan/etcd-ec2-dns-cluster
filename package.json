@@ -5,7 +5,8 @@
   "author": "mikejmacmillan@gmail.com",
   "main": "run.js",
   "scripts": {
-      "start": "node run.js"
+      "start": "node run.js",
+      "generate-user-data": "ct --platform ec2 --files-dir ./ --in-file cl-config.yaml | base64 > user-data"
   },
   "dependencies": {
       "aws-sdk": "2.x.x"
