@@ -5,11 +5,14 @@
   "author": "mikejmacmillan@gmail.com",
   "main": "run.js",
   "scripts": {
-      "start": "node run.js",
-      "generate-user-data": "ct --platform ec2 --files-dir ./ --in-file cl-config.yaml | base64 > user-data"
+      "member": "node member.js",
+      "seed": "node seed.js",
+      "config-member": "ct --platform ec2 --files-dir ./ --in-file config-member.yaml | base64 > config-member-base64",
+      "config-seed": "ct --platform ec2 --files-dir ./ --in-file config-seed.yaml | base64 > config-seed-base64"
   },
   "dependencies": {
-      "aws-sdk": "2.x.x"
+      "aws-sdk": "2.x.x",
+      "shelljs": "0.x.x"
   },
   "license": "ISC"
 }

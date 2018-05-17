@@ -1,0 +1,38 @@
+passwd:
+  users:
+    - name: core
+      ssh_authorized_keys:
+        - "your ssh key"
+    - name: some-other-user
+      password_hash: "password-hash"
+      groups:
+        - "sudo"
+        - "docker"
+etcd:
+  version: 3.2.19
+  listen_peer_urls: "http://0.0.0.0:2380"
+  listen_client_urls: "http://0.0.0.0:2379"
+  advertise_client_urls: "http://{PRIVATE_IPV4}:2379"
+  initial_advertise_peer_urls: "http://{PRIVATE_IPV4}:2380"
+  initial_cluster_token: "cluster-key"
+  initial_cluster_state: "new"
+  discovery_srv: "your-domain.com"
+systemd:
+  units:
+    - name: cluster-member.service
+      enabled: true
+      contents: |
+        [Unit]
+        Description=cluster member initialization
+        Requires=docker.service coreos-metadata.service
+        After=docker.service coreos-metadata.service
+        Before=etcd-member.service
+
+        [Service]
+        Type=oneshot
+        EnvironmentFile=/run/metadata/coreos
+        ExecStart=/bin/docker run -e INSTANCE_ID=${COREOS_EC2_INSTANCE_ID} -e REGION=${COREOS_EC2_REGION} -e IP=${COREOS_EC2_IPV4_LOCAL} -e HOSTED_ZONE_ID=your-hosted-zone-id -e AWS_ACCESS_KEY_ID=your-aws-key -e AWS_SECRET_ACCESS_KEY=your-aws-secret mikejmacmillan/etcd-ec2-route53-cluster-member:latest
+        ExecStartPost=/bin/sleep 120
+
+        [Install]
+        WantedBy=multi-user.target
